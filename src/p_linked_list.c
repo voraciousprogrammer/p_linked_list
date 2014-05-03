@@ -40,9 +40,17 @@ typedef struct linked_list_node {
 struct p_linked_list {
         linked_list_node_t *pt_list_head;       /* Head of the list. */
         linked_list_node_t *pt_list_tail;       /* Tail of the list. */
-        void (*pt_deallocator)(const void *);
+        void (*pt_deallocator)(const void *);   /* Deallocation function. */
 };
 
+/*
+ * Create an empty linked list.
+ *
+ * deallocator: Function used to deallocate elements when the list is destroyed.
+ * comparefn: Place holder for future functionallity.
+ *
+ * Returns: An empty linked list or NULL at failure.
+ */
 p_linked_list_t *
 p_linked_list_create(void (*deallocator)(const void *),
                      void (*comparefn)(const void *, const void *))
@@ -65,6 +73,11 @@ p_linked_list_create(void (*deallocator)(const void *),
         return new_list;
 }
 
+/*
+ * Deallocates memory used by the linked list.
+ *
+ * linked_list: The linked list to deallocate.
+ */
 void
 p_linked_list_destroy(p_linked_list_t *linked_list)
 {
@@ -84,6 +97,16 @@ p_linked_list_destroy(p_linked_list_t *linked_list)
         }
 }
 
+/*
+ * Adds the element element to the linked list linked_list using add_order to
+ * decide where to insert the element.
+ *
+ * linked_list: The linked list to insert an element into.
+ * element: The element to insert.
+ * add_order: Specifies how to insert the element.
+ *
+ * Returns: 1 on success or 0 at failure.
+ */
 int
 p_linked_list_add_element(p_linked_list_t *linked_list, void *element,
                           enum order add_order)
@@ -123,6 +146,16 @@ p_linked_list_add_element(p_linked_list_t *linked_list, void *element,
 }
 
 
+/*
+ * Removes and returns an element from the linked list linked_list using
+ * remove_order to decide from where in the list the element is removed.
+ *
+ * linked_list: The linked list to remove an element from.
+ * remove_order: Specifies from where in the linked list the element
+ *               should be removed.
+ *
+ * Returns: The removed element.
+ */
 void *
 p_linked_list_remove_element(p_linked_list_t *linked_list,
                              enum order remove_order)
@@ -163,7 +196,13 @@ p_linked_list_remove_element(p_linked_list_t *linked_list,
         return tmp_data;
 }
 
-
+/*
+ * Decide if the linked list is empty or not.
+ *
+ * linked_list: The linked list to check if empty.
+ *
+ * Returns: 1 if the linked list is empty or 0 otherwise.
+ */
 int
 p_linked_list_is_empty(p_linked_list_t *linked_list)
 {

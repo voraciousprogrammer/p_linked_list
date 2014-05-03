@@ -182,6 +182,3 @@ TEST_F(BasicAddAndRemoveElementsFromList, AddHeadTailAndRemoveTail)
         EXPECT_EQ(100, *(int *)p_linked_list_remove_element(list, OR_TAIL));
         EXPECT_EQ(10, *(int *)p_linked_list_remove_element(list, OR_TAIL));
 }
-// empty function on NULL.
-// ins head tail rem tail.
-// ins head rem head tail.

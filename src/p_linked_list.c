@@ -27,4 +27,149 @@
  * SUCH DAMAGE.
  */
 
+#include <stdlib.h>
+
 #include "p_linked_list.h"
+
+typedef struct linked_list_node {
+        void *le_data;                          /* The Data stored in list. */
+        struct linked_list_node *le_next;       /* Next node in list. */
+        struct linked_list_node *le_prev;       /* Previous node in list. */
+} linked_list_node_t;
+
+struct p_linked_list {
+        linked_list_node_t *pt_list_head;       /* Head of the list. */
+        linked_list_node_t *pt_list_tail;       /* Tail of the list. */
+        void (*pt_deallocator)(const void *);
+};
+
+p_linked_list_t *
+p_linked_list_create(void (*deallocator)(const void *),
+                     void (*comparefn)(const void *, const void *))
+{
+        p_linked_list_t *new_list;
+
+        (void)comparefn;
+
+        if (deallocator == NULL)
+                return NULL;
+
+        new_list = calloc(1, sizeof(*new_list));
+        if (new_list == NULL)
+                return NULL;
+
+        new_list->pt_list_head = NULL;
+        new_list->pt_list_tail = NULL;
+        new_list->pt_deallocator = deallocator;
+
+        return new_list;
+}
+
+void
+p_linked_list_destroy(p_linked_list_t *linked_list)
+{
+        linked_list_node_t *element, *next_element;
+
+        if (linked_list != NULL) {
+
+                if (!p_linked_list_is_empty(linked_list)) {
+                        for (element = linked_list->pt_list_head;
+                            element != NULL; element = next_element) {
+                                next_element = element->le_next;
+                                linked_list->pt_deallocator(element);
+                        }
+                }
+
+                free(linked_list);
+        }
+}
+
+int
+p_linked_list_add_element(p_linked_list_t *linked_list, void *element,
+                          enum order add_order)
+{
+        linked_list_node_t *node;
+
+        if (linked_list == NULL)
+                return 0;
+
+        node = calloc(1, sizeof(*node));
+        if (node == NULL)
+                return 0;
+
+        node->le_data = element;
+        node->le_prev = NULL;
+        node->le_next = NULL;
+
+        if (p_linked_list_is_empty(linked_list)) {
+                linked_list->pt_list_head = node;
+                linked_list->pt_list_tail = node;
+        } else {
+                switch (add_order) {
+                case OR_HEAD:
+                        node->le_next = linked_list->pt_list_head;
+                        linked_list->pt_list_head->le_prev = node;
+                        linked_list->pt_list_head = node;
+                        break;
+                case OR_TAIL:
+                        node->le_prev = linked_list->pt_list_tail;
+                        linked_list->pt_list_tail->le_next = node;
+                        linked_list->pt_list_tail = node;
+                        break;
+                }
+        }
+
+        return 1;
+}
+
+
+void *
+p_linked_list_remove_element(p_linked_list_t *linked_list,
+                             enum order remove_order)
+{
+        linked_list_node_t *tmp_node;
+        void *tmp_data;
+
+        if (linked_list == NULL)
+                return NULL;
+
+        if (p_linked_list_is_empty(linked_list))
+                return NULL;
+
+        tmp_node = NULL;
+        if (linked_list->pt_list_head->le_next == NULL) {
+                tmp_node = linked_list->pt_list_head;
+                linked_list->pt_list_head = NULL;
+                linked_list->pt_list_tail = NULL;
+        } else {
+                switch (remove_order) {
+                case OR_HEAD:
+                        tmp_node = linked_list->pt_list_head;
+                        linked_list->pt_list_head = tmp_node->le_next;
+                        linked_list->pt_list_head->le_prev = NULL;
+                        break;
+                case OR_TAIL:
+                        tmp_node = linked_list->pt_list_tail;
+                        linked_list->pt_list_tail = tmp_node->le_prev;
+                        linked_list->pt_list_tail->le_next = NULL;
+                        break;
+                }
+        }
+
+        tmp_data = tmp_node->le_data;
+
+        free(tmp_node);
+
+        return tmp_data;
+}
+
+
+int
+p_linked_list_is_empty(p_linked_list_t *linked_list)
+{
+
+        if (linked_list == NULL || linked_list->pt_list_head == NULL)
+                return 1;
+        else
+                return 0;
+}

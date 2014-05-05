@@ -9,6 +9,11 @@ INCLUDE_DIRECTORIES(${gtest_SOURCE_DIR}
                     ${gtest_SOURCE_DIR}/include
                     ${PROJECT_SOURCE_DIR}/src)
 
+SET(p_linked_list_VERSION_MAJOR 0)
+SET(p_linked_list_VERSION_MINOR 0)
+SET(p_linked_list_VERSION_PATCH 0)
+SET(p_linked_list_VERSION_STRING ${p_linked_list_VERSION_MAJOR}.${p_linked_list_VERSION_MINOR}.${p_linked_list_VERSION_PATCH})
+
 IF(UNIX)
         SET(CMAKE_CXX_FLAGS "-Wall -W -Werror")
         SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -DDEBUG")

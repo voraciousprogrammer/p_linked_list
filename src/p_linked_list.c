@@ -44,8 +44,8 @@ struct p_linked_list {
         void (*pt_deallocator)(const void *);           /* Deallocation fn. */
 };
 
-static void insert_at_head(p_linked_list_t *, linked_list_node_t *);
-static void insert_at_tail(p_linked_list_t *, linked_list_node_t *);
+static int insert_at_head(p_linked_list_t *, linked_list_node_t *);
+static int insert_at_tail(p_linked_list_t *, linked_list_node_t *);
 
 /*
  * Create an empty linked list.
@@ -101,6 +101,10 @@ p_linked_list_destroy(p_linked_list_t *linked_list)
                         }
                 }
 
+                linked_list->pt_list_head = NULL;
+                linked_list->pt_list_tail = NULL;
+                linked_list->pt_deallocator = NULL;
+
                 free(linked_list);
         }
 }
@@ -133,16 +137,26 @@ p_linked_list_add_element(p_linked_list_t *list, void *element,
         node->le_next = NULL;
 
         if (p_linked_list_is_empty(list)) {
+                /*
+                 * Insert and make sure everyting is sane because
+                 * this is the first element inserted.
+                 */
                 list->pt_list_head = node;
                 list->pt_list_tail = node;
         } else {
                 switch (add_order) {
                 case OR_HEAD:
-                        insert_at_head(list, node);
+                        if (!insert_at_head(list, node))
+                                return 0;
                         break;
                 case OR_TAIL:
-                        insert_at_tail(list, node);
+                        if (!insert_at_tail(list, node))
+                                return 0;
                         break;
+                default:
+                        /* This should never happen! */
+
+                        return 0;
                 }
         }
 
@@ -174,6 +188,10 @@ p_linked_list_remove_element(p_linked_list_t *linked_list,
 
         tmp_node = NULL;
         if (linked_list->pt_list_head->le_next == NULL) {
+                /*
+                 * Last element in the list, so it doesn't
+                 * matter if we remove from head or tail.
+                 */
                 tmp_node = linked_list->pt_list_head;
                 linked_list->pt_list_head = NULL;
                 linked_list->pt_list_tail = NULL;
@@ -189,6 +207,10 @@ p_linked_list_remove_element(p_linked_list_t *linked_list,
                         linked_list->pt_list_tail = tmp_node->le_prev;
                         linked_list->pt_list_tail->le_next = NULL;
                         break;
+                default:
+                        /* This should never happen! */
+
+                        return NULL;
                 }
         }
 
@@ -222,17 +244,18 @@ p_linked_list_is_empty(p_linked_list_t *linked_list)
  * list: The list to insert the new node into.
  * node: The node to insert.
  */
-static void
+static int
 insert_at_head(p_linked_list_t *list, linked_list_node_t *node)
 {
 
-        assert(list != NULL);
-        assert(node != NULL);
-        assert(!p_linked_list_is_empty(list));
+        if (list == NULL || node == NULL || p_linked_list_is_empty(list))
+                return 0;
 
         node->le_next = list->pt_list_head;
         list->pt_list_head->le_prev = node;
         list->pt_list_head = node;
+
+        return 1;
 }
 
 /*
@@ -241,15 +264,17 @@ insert_at_head(p_linked_list_t *list, linked_list_node_t *node)
  * list: The list to insert the new node into.
  * node: The node to insert.
  */
-static void
+static int
 insert_at_tail(p_linked_list_t *list, linked_list_node_t *node)
 {
 
-        assert(list != NULL);
-        assert(node != NULL);
-        assert(!p_linked_list_is_empty(list));
+        if (list == NULL || node == NULL || p_linked_list_is_empty(list) ||
+            list->pt_list_tail == NULL)
+                return 0;
 
         node->le_prev = list->pt_list_tail;
         list->pt_list_tail->le_next = node;
         list->pt_list_tail = node;
+
+        return 1;
 }

@@ -3,11 +3,11 @@
 
 enum order {
         OR_HEAD,        /* Add/remove element at/from the head of the list. */
-        OR_TAIL         /* Add/remove element at/from the tail of the list. */
+        OR_TAIL,        /* Add/remove element at/from the tail of the list. */
+        OR_ORDER        /* Insert the element in order (only for inserts). */
 };
 
 /* Forward declaration of opaque types. */
-
 typedef struct p_linked_list p_linked_list_t;
 
 /* Exported functions. */

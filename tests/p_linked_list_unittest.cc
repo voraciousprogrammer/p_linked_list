@@ -7,6 +7,26 @@ extern "C"
 
 int number_of_deallocations = 0;
 
+int comparefnincreasing(const void *data1, const void *data2)
+{
+        int *a, *b;
+
+        a = (int *)data1;
+        b = (int *)data2;
+
+        return *a - *b;
+}
+
+int comparefndecreasing(const void *data1, const void *data2)
+{
+        int *a, *b;
+
+        a = (int *)data1;
+        b = (int *)data2;
+
+        return *b - *a;
+}
+
 void deallocator(const void *data)
 {
         (void)data;
@@ -181,4 +201,88 @@ TEST_F(BasicAddAndRemoveElementsFromList, AddHeadTailAndRemoveTail)
 
         EXPECT_EQ(100, *(int *)p_linked_list_remove_element(list, OR_TAIL));
         EXPECT_EQ(10, *(int *)p_linked_list_remove_element(list, OR_TAIL));
+}
+
+// Add one element to the head and remove 2 elements from the tail.
+TEST_F(BasicAddAndRemoveElementsFromList, AddHeadAndRemove2Tail)
+{
+        int e1 = 10;
+
+        EXPECT_EQ(1, p_linked_list_add_element(list, &e1, OR_HEAD));
+
+        EXPECT_EQ(10, *(int *)p_linked_list_remove_element(list, OR_TAIL));
+        EXPECT_EQ(NULL, p_linked_list_remove_element(list, OR_TAIL));
+}
+
+// Add a NULL element.
+TEST_F(BasicAddAndRemoveElementsFromList, AddAndRemoveNullElement)
+{
+        EXPECT_EQ(1, p_linked_list_add_element(list, NULL, OR_HEAD));
+        EXPECT_EQ(NULL, p_linked_list_remove_element(list, OR_TAIL));
+}
+
+class InOrderTests : public testing::Test {
+
+        protected:
+                virtual void SetUp()
+                {
+                }
+
+                virtual void TearDown()
+                {
+                        p_linked_list_destroy(list);
+                }
+
+                p_linked_list *list;
+};
+
+TEST_F(InOrderTests, BasicInsertInOrder)
+{
+        int e1 = 100;
+        int e2 = 10;
+        int e3 = 50;
+
+
+        list = p_linked_list_create(deallocator, comparefnincreasing);
+        EXPECT_TRUE(list != NULL);
+
+        EXPECT_EQ(1, p_linked_list_add_element(list, &e1, OR_ORDER));
+        EXPECT_EQ(1, p_linked_list_add_element(list, &e2, OR_ORDER));
+        EXPECT_EQ(1, p_linked_list_add_element(list, &e3, OR_ORDER));
+
+        EXPECT_EQ(10, *(int *)p_linked_list_remove_element(list, OR_HEAD));
+        EXPECT_EQ(50, *(int *)p_linked_list_remove_element(list, OR_HEAD));
+        EXPECT_EQ(100, *(int *)p_linked_list_remove_element(list, OR_HEAD));
+}
+
+TEST_F(InOrderTests, BasicInsertInOrderReverse)
+{
+        int e1 = 100;
+        int e2 = 10;
+        int e3 = 50;
+
+
+        list = p_linked_list_create(deallocator, comparefndecreasing);
+        EXPECT_TRUE(list != NULL);
+
+        EXPECT_EQ(1, p_linked_list_add_element(list, &e1, OR_ORDER));
+        EXPECT_EQ(1, p_linked_list_add_element(list, &e2, OR_ORDER));
+        EXPECT_EQ(1, p_linked_list_add_element(list, &e3, OR_ORDER));
+
+        EXPECT_EQ(100, *(int *)p_linked_list_remove_element(list, OR_HEAD));
+        EXPECT_EQ(50, *(int *)p_linked_list_remove_element(list, OR_HEAD));
+        EXPECT_EQ(10, *(int *)p_linked_list_remove_element(list, OR_HEAD));
+}
+
+TEST_F(InOrderTests, RemoveInOrder)
+{
+        int e = 10;
+
+
+        list = p_linked_list_create(deallocator, comparefndecreasing);
+        EXPECT_TRUE(list != NULL);
+
+        EXPECT_EQ(1, p_linked_list_add_element(list, &e, OR_ORDER));
+
+        EXPECT_EQ(NULL, (int *)p_linked_list_remove_element(list, OR_ORDER));
 }
